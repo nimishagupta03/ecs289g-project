@@ -29,7 +29,7 @@ public class MovieTitle {
 	public static final Logger logger = Logger.getLogger(MovieTitle.class);
 	
 	@Id
-	private Long id;
+	private long id;
 	private Date releaseDate;
 	private String title;
 	

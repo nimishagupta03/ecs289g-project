@@ -11,6 +11,10 @@ public class Loader {
 		DataLoader dataLoader = (DataLoader)ServiceLocator.getInstance().
 								getAppContext().getBean("movieTitleDataLoader");
 		dataLoader.doLoad();
+		
+		DataLoader ratingDataLoader = (DataLoader)ServiceLocator.getInstance().
+								getAppContext().getBean("ratingDataLoader");
+		ratingDataLoader.doLoad();
 	}
 
 }

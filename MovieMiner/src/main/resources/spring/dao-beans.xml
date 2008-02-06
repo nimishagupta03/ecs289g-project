@@ -6,6 +6,29 @@
 	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
 		http://www.springframework.org/schema/lang http://www.springframework.org/schema/lang/spring-lang-2.0.xsd
 		http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.1.xsd">
+
+	<!-- User/Movie Ratings -->
+	<bean id="ratingDao"
+		class="edu.ucdavis.cs.movieminer.data.RatingDaoImpl" />	
+	
+	<bean id="ratingDataLoader"
+		class="edu.ucdavis.cs.movieminer.data.CsvDataLoader">
+		<property name="inputSourceItemProvider"
+			ref="ratingInputSourceItemProviderBean" />
+		<property name="itemProcessor" ref="ratingItemProcessorBean" />
+		<property name="batchSize" value="1000" />
+	</bean>
+
+	<bean id="ratingInputSourceItemProviderBean"
+		class="edu.ucdavis.cs.movieminer.data.CsvInputSourceItemProvider">  
+		<property name="inputSource" 
+			value="file:/Documents and Settings/Philip/My Documents/UC Davis/ECS289G/netflix/train.csv.gz" />
+	</bean>
+
+	<bean id="ratingItemProcessorBean"
+		class="edu.ucdavis.cs.movieminer.data.RatingItemProcessor">
+		<property name="dao" ref="ratingDao" />	
+	</bean>
 	
 	<!-- Movie Titles  -->
 	<bean id="movieTitleDao"

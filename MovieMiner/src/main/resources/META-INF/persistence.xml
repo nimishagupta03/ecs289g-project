@@ -6,6 +6,7 @@ http://java.sun.com/xml/ns/persistence/persistence_1_0.xsd"
 	<persistence-unit name="movieminerpersist">
 		<provider>org.hibernate.ejb.HibernatePersistence</provider>
 		<class>edu.ucdavis.cs.movieminer.data.MovieTitle</class> 
+		<class>edu.ucdavis.cs.movieminer.data.Rating</class>
 		<properties>
 			<property name="hibernate.archive.autodetection"
 				value="class" />

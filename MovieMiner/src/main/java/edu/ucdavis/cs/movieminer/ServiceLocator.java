@@ -8,6 +8,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import edu.ucdavis.cs.movieminer.data.MovieTitleDao;
+import edu.ucdavis.cs.movieminer.data.RatingDao;
 
 /**
  * 
@@ -36,6 +37,10 @@ public class ServiceLocator {
 	
 	public MovieTitleDao getMovieTitleDao () {
 		return (MovieTitleDao)appContext.getBean("movieTitleDao");
+	}
+	
+	public RatingDao getRatingDao () {
+		return (RatingDao)appContext.getBean("ratingDao");
 	}
 	
 }
