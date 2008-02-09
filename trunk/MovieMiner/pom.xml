@@ -100,6 +100,11 @@
 	</repositories>
 	<dependencies>
 		<dependency>
+			<groupId>com.planetj.taste</groupId>
+			<artifactId>taste</artifactId>
+			<version>1.7-rc2</version>
+		</dependency>
+		<dependency>
 			<groupId>net.sf.opencsv</groupId>
 			<artifactId>opencsv</artifactId>
     		<version>1.8</version>
@@ -222,7 +227,7 @@
 										lib
 									</classpathPrefix>
 									<mainClass>
-										edu.ucdavis.cs.movieminer.data.Loader
+										edu.ucdavis.cs.movieminer.taste.TasteTest
 									</mainClass>
 								</manifest>
 							</archive>
