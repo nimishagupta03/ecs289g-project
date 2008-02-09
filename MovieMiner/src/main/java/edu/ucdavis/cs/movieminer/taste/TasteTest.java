@@ -38,8 +38,8 @@ public class TasteTest {
 			System.exit(-1);
 		}
 		
-		final String netflixDataDir = args[1];
-		final int neighbors = Integer.parseInt(args[2]);
+		final String netflixDataDir = args[0];
+		final int neighbors = Integer.parseInt(args[1]);
 		System.out.println("netflixDataDir="+netflixDataDir+" neighbors="+neighbors);
 		
 		final DataModel myModel = new NetflixDataModel(new File(netflixDataDir));
