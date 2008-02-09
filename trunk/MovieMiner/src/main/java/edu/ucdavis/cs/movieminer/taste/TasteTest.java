@@ -36,6 +36,8 @@ public class TasteTest {
 			System.out.println("Usage:");
 			System.out.println(" java TasteTest {netflix_data_dir} {k_neighbor_value}");
 			System.exit(-1);
+		} else {
+			System.out.println("using command line args: "+args);
 		}
 		
 		final String netflixDataDir = args[0];
