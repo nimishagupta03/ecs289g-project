@@ -5,7 +5,7 @@
                       http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>edu.ucdavis.cs.movieminer</groupId>
-	<artifactId>movieminder</artifactId>
+	<artifactId>movieminer</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>MovieMiner</name>
 	<description>
