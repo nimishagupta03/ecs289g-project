@@ -48,18 +48,18 @@ public class Rating {
 		
 	}
 	
-	public static final Rating convert(LinkedList<String> fields) {
+	public static final Rating convert(String[] fields) {
 		Rating rating = new Rating();
 		
 		try {
 			RatingPK key = new RatingPK();
-			key.setMovieId(Long.parseLong(fields.get(0)));
-			key.setUserId(Long.parseLong(fields.get(1)));
+			key.setMovieId(Long.parseLong(fields[0]));
+			key.setUserId(Long.parseLong(fields[1]));
 			rating.setPrimaryKey(key);
-			rating.setRating(Integer.parseInt(fields.get(2)));
-			rating.setRatingRecommendedDate(formatter.parse(fields.get(3)));
+			rating.setRating(Integer.parseInt(fields[2]));
+			rating.setRatingRecommendedDate(formatter.parse(fields[3]));
 		} catch (ParseException e) {
-			logger.error("error parsing "+fields.get(3)+" as a date");
+			logger.error("error parsing "+fields[3]+" as a date");
 		}
 		
 		return rating;
