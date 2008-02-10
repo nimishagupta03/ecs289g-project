@@ -4,20 +4,13 @@
 package edu.ucdavis.cs.movieminer.taste;
 
 import java.io.File;
+import java.util.List;
 
-import com.planetj.taste.common.TasteException;
-import com.planetj.taste.correlation.UserCorrelation;
-import com.planetj.taste.eval.RecommenderBuilder;
-import com.planetj.taste.eval.RecommenderEvaluator;
-import com.planetj.taste.impl.correlation.AveragingPreferenceInferrer;
-import com.planetj.taste.impl.correlation.PearsonCorrelation;
-import com.planetj.taste.impl.eval.RMSRecommenderEvaluator;
 import com.planetj.taste.impl.model.netflix.NetflixDataModel;
-import com.planetj.taste.impl.neighborhood.NearestNUserNeighborhood;
 import com.planetj.taste.impl.recommender.CachingRecommender;
-import com.planetj.taste.impl.recommender.GenericUserBasedRecommender;
+import com.planetj.taste.impl.recommender.slopeone.SlopeOneRecommender;
 import com.planetj.taste.model.DataModel;
-import com.planetj.taste.neighborhood.UserNeighborhood;
+import com.planetj.taste.recommender.RecommendedItem;
 import com.planetj.taste.recommender.Recommender;
 
 /**
@@ -52,28 +45,35 @@ public class TasteTest {
 		
 		final DataModel myModel = new NetflixDataModel(new File(netflixDataDir));
 
-		RecommenderBuilder builder = new RecommenderBuilder() {
-		    public Recommender buildRecommender(DataModel model) throws TasteException {
-		    	// build and return the Recommender to evaluate here
-				UserCorrelation userCorrelation = new PearsonCorrelation(model);
-				// Optional:
-				userCorrelation
-						.setPreferenceInferrer(new AveragingPreferenceInferrer(model));
-
-				UserNeighborhood neighborhood = new NearestNUserNeighborhood(neighbors,
-						userCorrelation, model);
-				Recommender recommender = new GenericUserBasedRecommender(model,
-						neighborhood, userCorrelation);
-				Recommender cachingRecommender = new CachingRecommender(recommender);
-				return cachingRecommender;
-		    }
-		  };
-		Recommender recommender = builder.buildRecommender(myModel);
+		Recommender recommender = new SlopeOneRecommender(myModel);
+		//Recommender cachingRecommender = new CachingRecommender(recommender);
 		
 		
-		RecommenderEvaluator evaluator = new RMSRecommenderEvaluator();
-		double evaluation = evaluator.evaluate(builder, myModel, 0.9, 1.0);
-		System.out.println("evaluation = "+evaluation);
+		
+//		RecommenderBuilder builder = new RecommenderBuilder() {
+//		    public Recommender buildRecommender(DataModel model) throws TasteException {
+//		    	// build and return the Recommender to evaluate here
+//				UserCorrelation userCorrelation = new PearsonCorrelation(model);
+//				// Optional:
+//				userCorrelation
+//						.setPreferenceInferrer(new AveragingPreferenceInferrer(model));
+//
+//				UserNeighborhood neighborhood = new NearestNUserNeighborhood(neighbors,
+//						userCorrelation, model);
+//				Recommender recommender = new GenericUserBasedRecommender(model,
+//						neighborhood, userCorrelation);
+//				Recommender cachingRecommender = new CachingRecommender(recommender);
+//				return cachingRecommender;
+//		    }
+//		  };
+//		Recommender recommender = builder.buildRecommender(myModel);
+		List<RecommendedItem> recommendations = recommender.recommend("6", 5);
+		for(RecommendedItem item : recommendations){
+			System.out.println(item.getItem()+": "+ item.getValue());
+		}
+//		RecommenderEvaluator evaluator = new RMSRecommenderEvaluator();
+//		double evaluation = evaluator.evaluate(builder, myModel, 0.9, 1.0);
+//		System.out.println("evaluation = "+evaluation);
 	}
 
 }
