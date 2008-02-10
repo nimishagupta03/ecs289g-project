@@ -97,7 +97,7 @@ public class CsvInputSourceItemProvider implements InputSourceItemProvider<Objec
 				logger.error("error while reading input file "+nextLine);
 			}
 			
-			return (Object)Lists.newLinkedList((String[])currentLine);
+			return (Object)currentLine;
 		}
 		
 		public void remove() {

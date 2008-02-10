@@ -47,7 +47,7 @@ public class RatingItemProcessor implements ItemProcessor {
 	protected void processItem(Object entry) {
 		Rating rating;
 
-		rating = Rating.convert((LinkedList<String>)entry);
+		rating = Rating.convert((String[])entry);
 
 		logger.debug(rating.getPrimaryKey().getUserId()+' '+
 				rating.getPrimaryKey().getMovieId()+' '+rating.getRating());
