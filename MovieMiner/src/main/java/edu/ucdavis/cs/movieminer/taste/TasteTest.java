@@ -21,6 +21,12 @@ import com.planetj.taste.neighborhood.UserNeighborhood;
 import com.planetj.taste.recommender.Recommender;
 
 /**
+ * Requires the following file and directory
+ * to be in the netflix_data_dir.  
+ * 
+ * movie_titles.txt (file)
+ * training_set (directory containing movie ratings)
+ * 
  * 
  * @author pfishero
  * @version $Id$
@@ -56,14 +62,15 @@ public class TasteTest {
 
 				UserNeighborhood neighborhood = new NearestNUserNeighborhood(neighbors,
 						userCorrelation, model);
-
 				Recommender recommender = new GenericUserBasedRecommender(model,
 						neighborhood, userCorrelation);
 				Recommender cachingRecommender = new CachingRecommender(recommender);
-				
 				return cachingRecommender;
 		    }
 		  };
+		Recommender recommender = builder.buildRecommender(myModel);
+		
+		
 		RecommenderEvaluator evaluator = new RMSRecommenderEvaluator();
 		double evaluation = evaluator.evaluate(builder, myModel, 0.9, 1.0);
 		System.out.println("evaluation = "+evaluation);
