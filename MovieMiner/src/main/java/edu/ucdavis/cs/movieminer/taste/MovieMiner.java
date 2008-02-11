@@ -42,6 +42,8 @@ import edu.ucdavis.cs.movieminer.taste.recommender.LoggingRecommender;
  * Predicts a single rating for the passed in data and
  * recommender.
  * 
+ * NOTE: Rounds the estimated value to an integer using BigDecimal.ROUND_HALF_UP
+ * 
  * @author jbeck
  *
  */
@@ -60,6 +62,11 @@ public class MovieMiner {
 		return data;
 	}
 	
+	/**
+	 * NOTE: Rounds the estimated value using BigDecimal.ROUND_HALF_UP
+	 * 
+	 * @throws TasteException
+	 */
 	public void recommend() throws TasteException{
 		logger.info("Recommending ratings.");
 		for(Rating rating : data){
@@ -75,6 +82,12 @@ public class MovieMiner {
 		}
 	}
 	
+	/**
+	 * Writes ratings to writer.
+	 * 
+	 * @param writer
+	 * @throws IOException
+	 */
 	public void write(Writer writer) throws IOException{
 		logger.info("Writing ratings to file.");
 		Rating.write(data, writer);
@@ -83,7 +96,7 @@ public class MovieMiner {
 	/**
 	 * args[0] is the test file.
 	 * args[1] is the netflix home directory, containing training_set directory and movie_titles.txt
-	 * args[2] number of neighbors used to prediction
+	 * args[2] number of neighbors used in prediction
 	 * args[3] output file where predicted ratings are stored
 	 * 
 	 * @param args
