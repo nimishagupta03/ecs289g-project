@@ -14,13 +14,13 @@ import com.planetj.taste.correlation.UserCorrelation;
 import com.planetj.taste.eval.RecommenderBuilder;
 import com.planetj.taste.eval.RecommenderEvaluator;
 import com.planetj.taste.impl.correlation.AveragingPreferenceInferrer;
+import com.planetj.taste.impl.correlation.GenericItemCorrelation;
 import com.planetj.taste.impl.correlation.PearsonCorrelation;
 import com.planetj.taste.impl.eval.RMSRecommenderEvaluator;
 import com.planetj.taste.impl.neighborhood.NearestNUserNeighborhood;
 import com.planetj.taste.impl.recommender.CachingRecommender;
 import com.planetj.taste.impl.recommender.GenericItemBasedRecommender;
 import com.planetj.taste.impl.recommender.GenericUserBasedRecommender;
-import com.planetj.taste.impl.recommender.slopeone.SlopeOneRecommender;
 import com.planetj.taste.model.DataModel;
 import com.planetj.taste.neighborhood.UserNeighborhood;
 import com.planetj.taste.recommender.Recommender;
@@ -72,23 +72,24 @@ public class ExtendedTasteTest {
 				
 				// -- SlopeOneRecommender
 				// Make a weighted slope one recommender
-				Recommender slopeOneRecommender = new SlopeOneRecommender(model);
+//				Recommender slopeOneRecommender = new SlopeOneRecommender(model);
 				// -- end SlopeOneRecommender
 				
 				// -- Item-based recommender
+				ItemCorrelation itemCorrelation = new GenericItemCorrelation(new PearsonCorrelation(model), model);
 				Recommender itemBasedRecommender =
-					  new GenericItemBasedRecommender(model, (ItemCorrelation)userCorrelation);
+					  new GenericItemBasedRecommender(model, itemCorrelation);
 				// -- end Item-based recommender
 				
 				Recommender compositeRecommender = 
 							new CompositeRecommender(model, 
 											userRecommender,
-											slopeOneRecommender,
+//											slopeOneRecommender,
 											itemBasedRecommender
 											).
 										setWeights(
-											0.30d, 
-											0.10d,
+											0.40d, 
+//											0.10d,
 											0.60d
 											);
 				Recommender cachingRecommender = new CachingRecommender(compositeRecommender);
