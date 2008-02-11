@@ -15,6 +15,10 @@ import com.planetj.taste.recommender.Recommender;
 import com.planetj.taste.recommender.Rescorer;
 
 /**
+ * Decorates the recommender with added logging to 
+ * estimatePreference and recommend methods.
+ * 
+ * 
  * @author jbeck
  *
  */
