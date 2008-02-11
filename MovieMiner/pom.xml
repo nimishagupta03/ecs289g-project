@@ -227,7 +227,7 @@
 										lib
 									</classpathPrefix>
 									<mainClass>
-										edu.ucdavis.cs.movieminer.taste.TasteTest
+										edu.ucdavis.cs.movieminer.taste.ExtendedTasteTest
 									</mainClass>
 								</manifest>
 							</archive>
