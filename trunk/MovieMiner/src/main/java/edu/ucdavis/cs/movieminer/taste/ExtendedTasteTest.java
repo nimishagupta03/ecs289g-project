@@ -9,6 +9,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import com.planetj.taste.common.TasteException;
+import com.planetj.taste.correlation.ItemCorrelation;
 import com.planetj.taste.correlation.UserCorrelation;
 import com.planetj.taste.eval.RecommenderBuilder;
 import com.planetj.taste.eval.RecommenderEvaluator;
@@ -17,6 +18,7 @@ import com.planetj.taste.impl.correlation.PearsonCorrelation;
 import com.planetj.taste.impl.eval.RMSRecommenderEvaluator;
 import com.planetj.taste.impl.neighborhood.NearestNUserNeighborhood;
 import com.planetj.taste.impl.recommender.CachingRecommender;
+import com.planetj.taste.impl.recommender.GenericItemBasedRecommender;
 import com.planetj.taste.impl.recommender.GenericUserBasedRecommender;
 import com.planetj.taste.impl.recommender.slopeone.SlopeOneRecommender;
 import com.planetj.taste.model.DataModel;
@@ -73,14 +75,21 @@ public class ExtendedTasteTest {
 				Recommender slopeOneRecommender = new SlopeOneRecommender(model);
 				// -- end SlopeOneRecommender
 				
+				// -- Item-based recommender
+				Recommender itemBasedRecommender =
+					  new GenericItemBasedRecommender(model, (ItemCorrelation)userCorrelation);
+				// -- end Item-based recommender
+				
 				Recommender compositeRecommender = 
 							new CompositeRecommender(model, 
 											userRecommender,
-											slopeOneRecommender
+											slopeOneRecommender,
+											itemBasedRecommender
 											).
 										setWeights(
-											0.75d, 
-											0.25d
+											0.30d, 
+											0.10d,
+											0.60d
 											);
 				Recommender cachingRecommender = new CachingRecommender(compositeRecommender);
 				
