@@ -14,6 +14,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
+import static edu.ucdavis.cs.movieminer.taste.Rating.*;
 
 /**
  * Input: CSV file containing a list of customer movie ratings.
@@ -27,41 +28,9 @@ import java.util.List;
  *
  */
 public class DataFormatter {
-
-	private class DataRow{
-		
-		private Integer userId;
-		private Integer movieId;
-		private Integer rating;
-		private String date;
-		
-		public DataRow(int userId, int movieId, int rating, String date){
-			this.userId = userId;
-			this.movieId = movieId;
-			this.rating = rating;
-			this.date = date;
-		}
-
-		public Integer getUserId() {
-			return userId;
-		}
-
-		public Integer getMovieId() {
-			return movieId;
-		}
-
-		public Integer getRating() {
-			return rating;
-		}
-		
-		public String getDate(){
-			return date;
-		}
-		
-	}
 	
 	private static final String FILE_PREFIX = "mv_";
-	private List<DataRow> ratings = new LinkedList<DataRow>();
+	private List<Rating> ratings = new LinkedList<Rating>();
 	private File dataFile;
 	
 	/**
@@ -78,19 +47,12 @@ public class DataFormatter {
 		String line;
 		// Parse file
 		while ( (line = reader.readLine()) != null){
-			int firstComma = line.indexOf(',');
-			int movieId = Integer.valueOf(line.substring(0, firstComma));
-			int secondComma = line.indexOf(',', firstComma+1);
-			int userId = Integer.parseInt(line.substring(firstComma+1, secondComma));
-			int thirdComma = line.indexOf(',', secondComma + 1);
-			int rating = Integer.parseInt(line.substring(secondComma+1, thirdComma));
-			String date = line.substring(thirdComma+1);
-			ratings.add(new DataRow(userId, movieId, rating, date));
+			ratings.add(createRating(line));
 		}
-		Comparator<DataRow> movieIdSort = new Comparator<DataRow>(){
+		Comparator<Rating> movieIdSort = new Comparator<Rating>(){
 
 			@Override
-			public int compare(DataRow row1, DataRow row2) {
+			public int compare(Rating row1, Rating row2) {
 				return row1.getMovieId().compareTo(row2.getMovieId());
 			}
 			
@@ -100,10 +62,10 @@ public class DataFormatter {
 		// Create a file for each movieId
 		int currentMovieId = -1;
 		BufferedWriter currentMovieFile = null; 
-		for(DataRow rating : ratings){
+		for(Rating rating : ratings){
 			if (rating.getMovieId() == currentMovieId){
 				// Add an entry to the current movie file
-				currentMovieFile.write(rating.getUserId()+","+rating.getRating()+","+rating.getDate());
+				write(rating, currentMovieFile);
 				currentMovieFile.newLine();
 			}else{
 				// Close previous file
@@ -115,7 +77,7 @@ public class DataFormatter {
 				currentMovieFile = new BufferedWriter(new FileWriter(FILE_PREFIX+rating.getMovieId()));
 				currentMovieFile.write(Integer.toString(rating.getMovieId())+" ");
 				currentMovieFile.newLine();
-				currentMovieFile.write(rating.getUserId()+","+rating.getRating()+","+rating.getDate());
+				write(rating, currentMovieFile);
 				currentMovieFile.newLine();
 				currentMovieId = rating.getMovieId();
 			}
