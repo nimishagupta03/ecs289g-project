@@ -34,16 +34,18 @@ public class PrecomputeItemSimilarities {
 	 * @param args
 	 */
 	public static void main(String[] args) throws Exception {
-		if (args.length < 1) {
+		if (args.length < 3) {
 			logger.info("Usage:");
-			logger.info(" java TasteTest {netflix_data_dir} ");
+			logger.info(" java TasteTest {netflix_data_dir} {chunk_start} {chunk_end}");
 			System.exit(-1);
 		} else {
 			logger.info("using command line args: "+StringUtils.join(args, ", "));
 		}
 		
 		final String netflixDataDir = args[0];
-		logger.info("netflixDataDir="+netflixDataDir);
+		final int chunkStart = Integer.parseInt(args[1]);
+		final int chunkEnd = Integer.parseInt(args[2]);
+		logger.info("netflixDataDir="+netflixDataDir+" start="+chunkStart+" end="+chunkEnd);
 		
 		final DataModel dataModel = new ECS289GNetflixDataModel(new File(netflixDataDir));
 		
@@ -53,20 +55,22 @@ public class PrecomputeItemSimilarities {
 		final int size = items.size();
 		for (int i = 0; i < size; i++) {
 			logger.info("item "+i);
-			final Item item1 = items.get(i);
-			for (int j = i + 1; j < size; j++) {
-				final Item item2 = items.get(j);
-				final double correlation = otherCorrelation.itemCorrelation(item1, item2);
-				Map<Item, Double> map = correlationMaps.get(item1);
-				if (map == null) {
-					map = new HashMap<Item, Double>(1009);
-					correlationMaps.put(item1, map);
+			if (i >= chunkStart && i <= chunkEnd) {
+				final Item item1 = items.get(i);
+				for (int j = i + 1; j < size; j++) {
+					final Item item2 = items.get(j);
+					final double correlation = otherCorrelation.itemCorrelation(item1, item2);
+					Map<Item, Double> map = correlationMaps.get(item1);
+					if (map == null) {
+						map = new HashMap<Item, Double>(1009);
+						correlationMaps.put(item1, map);
+					}
+					map.put(item2, correlation);
 				}
-				map.put(item2, correlation);
 			}
 		}
 		logger.info("saving simliarity maps");
-		ObjectOutputStream objOut = new ObjectOutputStream(new FileOutputStream(new File(netflixDataDir, "simMap")));
+		ObjectOutputStream objOut = new ObjectOutputStream(new FileOutputStream(new File(netflixDataDir, "simMap"+chunkStart)));
 		objOut.writeObject(correlationMaps);
 		objOut.close();
 	}
