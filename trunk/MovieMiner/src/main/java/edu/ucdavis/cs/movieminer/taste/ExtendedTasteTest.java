@@ -40,17 +40,21 @@ public class ExtendedTasteTest {
 	 * @throws Exception
 	 */
 	public static void main(String[] args) throws Exception {
-		if (args.length < 2) {
+		if (args.length < 3) {
 			logger.info("Usage:");
-			logger.info(" java TasteTest {netflix_data_dir} {k_neighbor_value}");
+			logger.info(" java TasteTest {netflix_data_dir} "+
+					"{user_k_neighbor_value} {item_k_neighbor_value}");
 			System.exit(-1);
 		} else {
 			logger.info("using command line args: "+StringUtils.join(args, ", "));
 		}
 		
 		final String netflixDataDir = args[0];
-		final int neighbors = Integer.parseInt(args[1]);
-		logger.info("netflixDataDir="+netflixDataDir+" neighbors="+neighbors);
+		final int userNeighbors = Integer.parseInt(args[1]);
+		final int itemNeighbors = Integer.parseInt(args[2]);
+		logger.info("netflixDataDir="+netflixDataDir+
+				" user_neighbors="+userNeighbors+
+				" item_neighbors="+itemNeighbors);
 		
 		final DataModel myModel = new ECS289GNetflixDataModel(new File(netflixDataDir));
 
@@ -63,7 +67,7 @@ public class ExtendedTasteTest {
 				userCorrelation
 						.setPreferenceInferrer(new AveragingPreferenceInferrer(model));
 
-				UserNeighborhood neighborhood = new NearestNUserNeighborhood(neighbors,
+				UserNeighborhood neighborhood = new NearestNUserNeighborhood(userNeighbors,
 						userCorrelation, model);
 
 				Recommender userRecommender = new GenericUserBasedRecommender(model,
@@ -77,8 +81,11 @@ public class ExtendedTasteTest {
 				
 				// -- Item-based recommender
 				ItemCorrelation itemCorrelation = new GenericItemCorrelation(new PearsonCorrelation(model), model);
-				Recommender itemBasedRecommender =
-					  new GenericItemBasedRecommender(model, itemCorrelation);
+				KnnItemBasedRecommender itemBasedRecommender = 
+					new KnnItemBasedRecommender(
+						new GenericItemBasedRecommender(model, itemCorrelation),
+						itemNeighbors, 
+						itemCorrelation);
 				// -- end Item-based recommender
 				
 				Recommender compositeRecommender = 
@@ -93,6 +100,8 @@ public class ExtendedTasteTest {
 											0.60d
 											);
 				Recommender cachingRecommender = new CachingRecommender(compositeRecommender);
+				
+				logger.info("composed userRecommender, itemBasedRecommender");
 				
 				return cachingRecommender;
 		    }
