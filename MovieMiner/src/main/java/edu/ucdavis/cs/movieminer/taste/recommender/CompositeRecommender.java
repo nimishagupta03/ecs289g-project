@@ -5,6 +5,7 @@ package edu.ucdavis.cs.movieminer.taste.recommender;
 
 import java.util.List;
 
+import com.google.common.base.Preconditions;
 import com.planetj.taste.common.TasteException;
 import com.planetj.taste.impl.recommender.AbstractRecommender;
 import com.planetj.taste.model.DataModel;
@@ -33,6 +34,7 @@ public class CompositeRecommender extends AbstractRecommender {
 	}
 	
 	public CompositeRecommender setWeights(double ... weights) {
+		Preconditions.checkArgument(weights.length == recommenders.length);
 		this.weights = weights;
 		for (int i=0; i < weights.length; i++) {
 			weightsTotal += weights[i];
