@@ -89,13 +89,24 @@ public class PrecomputeItemSimilarities {
 							 */
 							public int compare(SimilarityScore o1,
 									SimilarityScore o2) {
-								double diff = o1.getRating() - o2.getRating();
-								if (diff > 0.0000001d) {
-									return -1;
-								} else if (diff < -0.0000001d) {
-									return 1;
-								} else { // close to 0 or at 0
+								if (o1.getRating() == Double.NaN &&
+										o2.getRating() ==  Double.NaN) {
 									return 0;
+								} else if (o1.getRating() == Double.NaN &&
+										o2.getRating() !=  Double.NaN) {
+									return 1;
+								} else if (o1.getRating() != Double.NaN &&
+										o2.getRating() ==  Double.NaN) {
+									return -1;
+								} else {
+									double diff = o1.getRating() - o2.getRating();
+									if (diff > 0.0000001d) {
+										return -1;
+									} else if (diff < -0.0000001d) {
+										return 1;
+									} else { // close to 0 or at 0
+										return 0;
+									}
 								}
 							}
 						});
