@@ -138,7 +138,7 @@ public class KnnItemBasedRecommender implements ItemBasedRecommender {
 		Iterables.addAll(itemNeighbors,
 				Iterables.transform(
 					Iterables.filter(
-						Arrays.asList(correlations[(Integer)item.getID()]), 
+						Arrays.asList(correlations[Integer.parseInt(item.getID().toString())]), 
 					new Predicate<Object>() {
 						@Override
 						public boolean apply(Object itemIn) {
