@@ -16,15 +16,17 @@
 
 package edu.ucdavis.cs.movieminer.taste;
 
-import com.planetj.taste.model.Item;
+import java.io.Serializable;
 
 import org.jetbrains.annotations.NotNull;
+
+import com.planetj.taste.model.Item;
 
 /**
  * @author Sean Owen
  * @since 1.3.5
  */
-final class NetflixMovie implements Item {
+final class NetflixMovie implements Item, Serializable{
 
 	private final Integer id;
 	private final String title;
