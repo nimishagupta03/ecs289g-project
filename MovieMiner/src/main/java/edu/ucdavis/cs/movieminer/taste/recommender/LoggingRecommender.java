@@ -25,6 +25,7 @@ import com.planetj.taste.recommender.Rescorer;
 public class LoggingRecommender extends RecommenderDecorator {
 
 	private static final Logger logger = Logger.getLogger(LoggingRecommender.class);
+	int estimateCount = 0;
 	
 	public LoggingRecommender(Recommender recommender) {
 		super(recommender);
@@ -33,23 +34,22 @@ public class LoggingRecommender extends RecommenderDecorator {
 	@Override
 	public double estimatePreference(Object userID, Object itemID)
 			throws TasteException {
-		logger.info("Estimating preference for userId: "+userID+" for itemId: "+itemID);
 		double preference = decoratedRecommender.estimatePreference(userID, itemID);
-		logger.info("Estimated perference: "+preference);
+		estimateCount++;
+		if (estimateCount%10000 == 0)
+			logger.info("Number of estimated values: "+estimateCount);
 		return preference;
 	}
 
 	@Override
 	public List<RecommendedItem> recommend(Object userID, int howMany,
 			Rescorer<Item> rescorer) throws TasteException {
-		logger.info("Recommending item(s) for userId: "+userID);
 		return decoratedRecommender.recommend(userID, howMany, rescorer);
 	}
 
 	@Override
 	public List<RecommendedItem> recommend(Object userID, int howMany)
 			throws TasteException {
-		logger.info("Recommending item(s) for userId: "+userID);
 		return decoratedRecommender.recommend(userID, howMany);
 	}
 
