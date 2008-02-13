@@ -6,7 +6,6 @@ package edu.ucdavis.cs.movieminer.taste;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.ObjectOutputStream;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -37,7 +36,7 @@ public class PrecomputeItemSimilarities {
 	 * Slot 0 is unused so that an Item's index is equal to its Id, rather than
 	 * its Id-1.
 	 */
-	private static final Object[] correlations = new Object[17771]; 
+	private static final Object[] correlations = new Object[17771];
 	
 	/**
 	 * @param args
@@ -76,89 +75,63 @@ public class PrecomputeItemSimilarities {
 					}
 					scores.add(new SimilarityScore((Integer)item2.getID(), correlation));
 				}
-				// sort the items by similarity and then keep only the top 20
-				Collections.sort(
-						(List<SimilarityScore>)correlations[(Integer)item1.getID()],
-						new Comparator<SimilarityScore>() {
-							/**
-							 * @param o1
-							 * @param o2
-							 * @return 1 if o1 should be before o2,
-							 * -1 if o1 should be after o2, else 0 if their ratings 
-							 * are equivalent.
-							 */
-							public int compare(SimilarityScore o1,
-									SimilarityScore o2) {
-								if (Double.isNaN(o1.getRating()) &&
-										Double.isNaN(o2.getRating())) {
-									return 0;
-								} else if (Double.isNaN(o1.getRating()) &&
-										!Double.isNaN(o2.getRating())) {
-									return -1;
-								} else if (!Double.isNaN(o1.getRating()) &&
-										Double.isNaN(o2.getRating())) {
-									return 1;
-								} else {
-									double diff = o1.getRating() - o2.getRating();
-									if (diff > 0.0000001d) {
-										return 1;
-									} else if (diff < -0.0000001d) {
-										return -1;
-									} else { // close to 0 or at 0
+				if (null != correlations[(Integer)item1.getID()]) {
+					// sort the items by similarity and then keep only the top 20
+					Collections.sort(
+							(List<SimilarityScore>)correlations[(Integer)item1.getID()],
+							new Comparator<SimilarityScore>() {
+								/**
+								 * @param o1
+								 * @param o2
+								 * @return 1 if o1 should be before o2,
+								 * -1 if o1 should be after o2, else 0 if their ratings 
+								 * are equivalent.
+								 */
+								public int compare(SimilarityScore o1,
+										SimilarityScore o2) {
+									if (Double.isNaN(o1.getRating()) &&
+											Double.isNaN(o2.getRating())) {
 										return 0;
+									} else if (Double.isNaN(o1.getRating()) &&
+											!Double.isNaN(o2.getRating())) {
+										return -1;
+									} else if (!Double.isNaN(o1.getRating()) &&
+											Double.isNaN(o2.getRating())) {
+										return 1;
+									} else {
+										double diff = o1.getRating() - o2.getRating();
+										if (diff > 0.0000001d) {
+											return 1;
+										} else if (diff < -0.0000001d) {
+											return -1;
+										} else { // close to 0 or at 0
+											return 0;
+										}
 									}
 								}
-							}
-						});
-				Collections.reverse((List<SimilarityScore>)correlations[(Integer)item1.getID()]);
-				
-				Object[] similarItems = new Object[20];
-				int itemIndex=0;
-				for (SimilarityScore simScore : 
-						(List<SimilarityScore>)correlations[(Integer)item1.getID()]) {
-					if (itemIndex < 20 && !Double.isNaN(simScore.getRating())) {
-						similarItems[itemIndex] = simScore;
-						logger.info("item1="+((NetflixMovie)item1).getTitle()+
-								" otherItem="+((NetflixMovie)dataModel.getItem(simScore.getItemID())).getTitle()+
-								" simScore="+simScore.getRating());
+							});
+					Collections.reverse((List<SimilarityScore>)correlations[(Integer)item1.getID()]);
+					
+					Object[] similarItems = new Object[20];
+					int itemIndex=0;
+					for (SimilarityScore simScore : 
+							(List<SimilarityScore>)correlations[(Integer)item1.getID()]) {
+						if (itemIndex < 20 && !Double.isNaN(simScore.getRating())) {
+							similarItems[itemIndex] = simScore;
+							logger.info("item1="+((NetflixMovie)item1).getTitle()+
+									" otherItem="+((NetflixMovie)dataModel.getItem(simScore.getItemID())).getTitle()+
+									" simScore="+simScore.getRating());
+						}
+						itemIndex++;
 					}
-					itemIndex++;
+					correlations[(Integer)item1.getID()] = similarItems;
 				}
-				correlations[(Integer)item1.getID()] = similarItems;
 			}
 		}
 		logger.info("saving simliarity scores");
 		ObjectOutputStream objOut = new ObjectOutputStream(new FileOutputStream(new File(netflixDataDir, "simScore"+chunkStart)));
 		objOut.writeObject(correlations);
 		objOut.close();
-	}
-	
-	public static class SimilarityScore implements Serializable {
-		private final Integer itemID;
-		private final Double rating;
-
-		/**
-		 * @param itemID
-		 * @param rating
-		 */
-		public SimilarityScore(Integer itemID, Double rating) {
-			super();
-			this.itemID = itemID;
-			this.rating = rating;
-		}
-		
-		/**
-		 * @return the itemID
-		 */
-		public Integer getItemID() {
-			return itemID;
-		}
-		/**
-		 * @return the rating
-		 */
-		public Double getRating() {
-			return rating;
-		}
 	}
 
 }
