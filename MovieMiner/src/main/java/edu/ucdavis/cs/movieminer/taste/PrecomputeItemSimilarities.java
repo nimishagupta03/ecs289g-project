@@ -118,11 +118,11 @@ public class PrecomputeItemSimilarities {
 						(List<SimilarityScore>)correlations[(Integer)item1.getID()]) {
 					if (itemIndex < 20 && !Double.isNaN(simScore.getRating())) {
 						similarItems[itemIndex] = simScore;
+						logger.info("item1="+((NetflixMovie)item1).getTitle()+
+								" otherItem="+((NetflixMovie)dataModel.getItem(simScore.getItemID())).getTitle()+
+								" simScore="+simScore.getRating());
 					}
 					itemIndex++;
-					logger.info("item1="+((NetflixMovie)item1).getTitle()+
-							" otherItem="+((NetflixMovie)dataModel.getItem(simScore.getItemID())).getTitle()+
-							" simScore="+simScore.getRating());
 				}
 				correlations[(Integer)item1.getID()] = similarItems;
 			}
