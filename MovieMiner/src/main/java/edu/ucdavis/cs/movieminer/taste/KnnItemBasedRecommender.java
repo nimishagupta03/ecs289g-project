@@ -144,8 +144,17 @@ public class KnnItemBasedRecommender implements ItemBasedRecommender {
 						public boolean apply(Object itemIn) {
 							boolean keep = true;
 							
-							Preference pref = theUser.getPreferenceFor(
-											((SimilarityScore)itemIn).getItemID());
+							Preference pref = null;
+							
+							if (itemIn != null
+									&& itemIn instanceof SimilarityScore) {
+								pref = theUser.getPreferenceFor(
+										((SimilarityScore)itemIn).getItemID());
+							} else {
+								logger.error("itemIn was null or " +
+										"was not a simscore:"+itemIn);
+							}
+							
 							if (pref == null) {
 								keep = false;
 							}						
