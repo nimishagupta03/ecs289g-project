@@ -17,6 +17,8 @@ import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Random;
 
 import org.apache.log4j.Logger;
 
@@ -32,6 +34,8 @@ import com.planetj.taste.impl.recommender.CachingRecommender;
 import com.planetj.taste.impl.recommender.GenericItemBasedRecommender;
 import com.planetj.taste.impl.recommender.GenericUserBasedRecommender;
 import com.planetj.taste.model.DataModel;
+import com.planetj.taste.model.Preference;
+import com.planetj.taste.model.User;
 import com.planetj.taste.neighborhood.UserNeighborhood;
 import com.planetj.taste.recommender.Recommender;
 
@@ -42,7 +46,6 @@ import edu.ucdavis.cs.movieminer.taste.recommender.LoggingRecommender;
  * Predicts a single rating for the passed in data and
  * recommender.
  * 
- * NOTE: Rounds the estimated value to an integer using BigDecimal.ROUND_HALF_UP
  * 
  * @author jbeck
  *
@@ -63,23 +66,77 @@ public class MovieMiner {
 	}
 	
 	/**
-	 * NOTE: Rounds the estimated value using BigDecimal.ROUND_HALF_UP
+	 * Predicts a rating using the recommender implementation.
+	 * If the estimate returned is NaN the estimate is the average
+	 * rating for the user.  If no values exist in the training
+	 * set to predict the estimate, it is chosen at random.
 	 * 
 	 * @throws TasteException
 	 */
 	public void recommend() throws TasteException{
 		logger.info("Recommending ratings.");
+		int nanCount = 0;
+		int noTrainDataCount = 0;
 		for(Rating rating : data){
-			double estimate = recommender.estimatePreference(rating.getUserId(), rating.getMovieId());
-			if (!Double.isNaN(estimate)){
-				BigDecimal bd = new BigDecimal(estimate);
-				bd = bd.setScale(0, BigDecimal.ROUND_HALF_UP);
-				logger.info("Estimated value rounded to int: "+bd.intValue());
-				rating.setRating(bd.intValue());
-			}else{
-				logger.warn("Value could not be estimated, returned NaN.");
+			try{
+				double estimate = recommender.estimatePreference(rating.getUserId(), rating.getMovieId());
+				if (!Double.isNaN(estimate)){
+					BigDecimal bd = new BigDecimal(estimate);
+					bd = bd.setScale(0, BigDecimal.ROUND_HALF_UP);
+					logger.info("Estimated value rounded to int: "+bd.intValue());
+					rating.setRating(bd.intValue());
+				}else{
+					logger.warn("Value could not be estimated, returned NaN.");
+					nanCount++;
+					rating.setRating(score(recommender.getDataModel().getUser(rating.getUserId())));
+				}
+			}catch (NoSuchElementException e){
+				logger.warn("No data exists in the training set for item: " +rating.getMovieId());
+				noTrainDataCount++;
+				rating.setRating(score(recommender.getDataModel().getUser(rating.getUserId())));
 			}
 		}
+		logger.info("Total NaN's encountered "+nanCount);
+		logger.info("Elements not found in the training set: "+noTrainDataCount);
+	}
+	
+	/**
+	 * Score by first trying to compute the average, else guess.
+	 * 
+	 * @param user
+	 * @return
+	 */
+	private int score(User user){
+		// first try calculating an average
+		logger.info("Score using user average.");
+		int score = average(user);
+		// guess random
+		if (score == 0){
+			logger.info("Average equal to zero, guess a random score.");
+			Random random = new Random();
+			score = random.nextInt(6);
+			if (score == 0){
+				score++;
+			} 
+		}
+		logger.info("Set score:"+score);
+		return score;
+	}
+	
+	/**
+	 * Compute the average score.
+	 * 
+	 * @param user
+	 * @return
+	 */
+	private int average(User user){
+		int n = 0;
+		int sum = 0;
+		for (Preference preference :  user.getPreferences()){
+			sum += preference.getValue();
+			n++;
+		}
+		return sum / n;
 	}
 	
 	/**
@@ -158,9 +215,9 @@ public class MovieMiner {
 												itemBasedRecommender
 												).
 											setWeights(
-												0.30d, 
+												0.40d, 
 												//0.10d,
-												0.70d
+												0.60d
 												);
 					Recommender cachingRecommender = new CachingRecommender(compositeRecommender);
 					
