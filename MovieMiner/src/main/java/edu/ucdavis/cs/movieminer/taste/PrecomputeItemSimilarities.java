@@ -32,9 +32,12 @@ public class PrecomputeItemSimilarities {
 	public static final Logger logger = Logger.getLogger(PrecomputeItemSimilarities.class);
 	
 	/**
-	 * Contains Object[20] of SimilarityScores
+	 * Contains Object[20] of SimilarityScores.
+	 * ItemID=1 will have its 20 most similar neighbors in slot 1 in this array.
+	 * Slot 0 is unused so that an Item's index is equal to its Id, rather than
+	 * its Id-1.
 	 */
-	private static final Object[] correlations = new Object[17770]; 
+	private static final Object[] correlations = new Object[17771]; 
 	
 	/**
 	 * @param args
