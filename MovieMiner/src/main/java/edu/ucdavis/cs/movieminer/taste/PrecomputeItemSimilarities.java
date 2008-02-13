@@ -69,7 +69,7 @@ public class PrecomputeItemSimilarities {
 				for (int j = i + 1; j < size; j++) {
 					final Item item2 = items.get(j);
 					final double correlation = otherCorrelation.itemCorrelation(item1, item2);
-					if (correlation != Double.NaN) {
+					if (!Double.isNaN(correlation)) {
 						List<SimilarityScore> scores = (List<SimilarityScore>)correlations[(Integer)item1.getID()];
 						if (scores == null) {
 							scores = new ArrayList<SimilarityScore>();
@@ -91,14 +91,14 @@ public class PrecomputeItemSimilarities {
 							 */
 							public int compare(SimilarityScore o1,
 									SimilarityScore o2) {
-								if (o1.getRating() == Double.NaN &&
-										o2.getRating() ==  Double.NaN) {
+								if (Double.isNaN(o1.getRating()) &&
+										Double.isNaN(o2.getRating())) {
 									return 0;
-								} else if (o1.getRating() == Double.NaN &&
-										o2.getRating() !=  Double.NaN) {
+								} else if (Double.isNaN(o1.getRating()) &&
+										!Double.isNaN(o2.getRating())) {
 									return -1;
-								} else if (o1.getRating() != Double.NaN &&
-										o2.getRating() ==  Double.NaN) {
+								} else if (!Double.isNaN(o1.getRating()) &&
+										Double.isNaN(o2.getRating())) {
 									return 1;
 								} else {
 									double diff = o1.getRating() - o2.getRating();
