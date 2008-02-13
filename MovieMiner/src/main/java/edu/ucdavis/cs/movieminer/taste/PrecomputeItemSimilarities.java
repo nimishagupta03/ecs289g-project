@@ -101,7 +101,7 @@ public class PrecomputeItemSimilarities {
 				for (SimilarityScore simScore : 
 						(List<SimilarityScore>)correlations[(Integer)item1.getID()]) {
 					if (itemIndex < 20) {
-						similarItems[i] = simScore;
+						similarItems[itemIndex] = simScore;
 						logger.info("item1="+((NetflixMovie)item1).getTitle()+
 								" otherItem="+((NetflixMovie)dataModel.getItem(simScore.getItemID())).getTitle()+
 								" simScore="+simScore.getRating());
