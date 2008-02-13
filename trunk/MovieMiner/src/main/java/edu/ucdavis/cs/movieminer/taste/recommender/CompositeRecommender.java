@@ -54,12 +54,16 @@ public class CompositeRecommender extends AbstractRecommender {
 	public double estimatePreference(Object userId, Object itemId)
 			throws TasteException {
 		double preferrence = 0;
+		double weightRunningTotal = 0;
 		
 		for (int i=0; i < recommenders.length; i++) {
 			double prefEstimate = recommenders[i].estimatePreference(userId, itemId);
-			preferrence += prefEstimate * weights[i];
+			if (!Double.isNaN(prefEstimate)) {
+				preferrence += prefEstimate * weights[i];
+				weightRunningTotal += weights[i];
+			}
 		}
-		preferrence /= weightsTotal;
+		preferrence /= weightRunningTotal;
 		
 		return preferrence;
 	}
