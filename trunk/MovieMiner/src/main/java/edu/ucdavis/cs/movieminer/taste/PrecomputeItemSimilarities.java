@@ -69,12 +69,14 @@ public class PrecomputeItemSimilarities {
 				for (int j = i + 1; j < size; j++) {
 					final Item item2 = items.get(j);
 					final double correlation = otherCorrelation.itemCorrelation(item1, item2);
-					List<SimilarityScore> scores = (List<SimilarityScore>)correlations[(Integer)item1.getID()];
-					if (scores == null) {
-						scores = new ArrayList<SimilarityScore>();
-						correlations[(Integer)item1.getID()] = scores;
+					if (correlation != Double.NaN) {
+						List<SimilarityScore> scores = (List<SimilarityScore>)correlations[(Integer)item1.getID()];
+						if (scores == null) {
+							scores = new ArrayList<SimilarityScore>();
+							correlations[(Integer)item1.getID()] = scores;
+						}
+						scores.add(new SimilarityScore((Integer)item2.getID(), correlation));
 					}
-					scores.add(new SimilarityScore((Integer)item2.getID(), correlation));
 				}
 				// sort the items by similarity and then keep only the top 20
 				Collections.sort(
@@ -97,7 +99,7 @@ public class PrecomputeItemSimilarities {
 									return -1;
 								} else if (o1.getRating() != Double.NaN &&
 										o2.getRating() ==  Double.NaN) {
-									return -1;
+									return 1;
 								} else {
 									double diff = o1.getRating() - o2.getRating();
 									if (diff > 0.0000001d) {
