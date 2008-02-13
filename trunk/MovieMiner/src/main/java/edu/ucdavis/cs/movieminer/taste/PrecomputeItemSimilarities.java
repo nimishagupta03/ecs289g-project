@@ -6,6 +6,10 @@ package edu.ucdavis.cs.movieminer.taste;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,7 +17,6 @@ import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
-import com.planetj.taste.common.TasteException;
 import com.planetj.taste.correlation.ItemCorrelation;
 import com.planetj.taste.impl.common.IteratorUtils;
 import com.planetj.taste.impl.correlation.PearsonCorrelation;
@@ -28,7 +31,10 @@ import com.planetj.taste.model.Item;
 public class PrecomputeItemSimilarities {
 	public static final Logger logger = Logger.getLogger(PrecomputeItemSimilarities.class);
 	
-	private static final Map<Item, Map<Item, Double>> correlationMaps = new HashMap<Item, Map<Item, Double>>(1009);
+	/**
+	 * Contains Object[20] of SimilarityScores
+	 */
+	private static final Object[] correlations = new Object[17770]; 
 	
 	/**
 	 * @param args
@@ -60,19 +66,83 @@ public class PrecomputeItemSimilarities {
 				for (int j = i + 1; j < size; j++) {
 					final Item item2 = items.get(j);
 					final double correlation = otherCorrelation.itemCorrelation(item1, item2);
-					Map<Item, Double> map = correlationMaps.get(item1);
-					if (map == null) {
-						map = new HashMap<Item, Double>(1009);
-						correlationMaps.put(item1, map);
+					List<SimilarityScore> scores = (List<SimilarityScore>)correlations[(Integer)item1.getID()];
+					if (scores == null) {
+						scores = new ArrayList<SimilarityScore>();
+						correlations[(Integer)item1.getID()] = scores;
 					}
-					map.put(item2, correlation);
+					scores.add(new SimilarityScore((Integer)item2.getID(), correlation));
 				}
+				// sort the items by similarity and then keep only the top 20
+				Collections.sort(
+						(List<SimilarityScore>)correlations[(Integer)item1.getID()],
+						new Comparator<SimilarityScore>() {
+							/**
+							 * @param o1
+							 * @param o2
+							 * @return -1 if o1 should be before o2 (o1 is greater),
+							 * 1 if o1 should be after o2, else 0 if their ratings 
+							 * are equivalent.
+							 */
+							public int compare(SimilarityScore o1,
+									SimilarityScore o2) {
+								double diff = o1.getRating() - o2.getRating();
+								if (diff > 0.0000001d) {
+									return -1;
+								} else if (diff < -0.0000001d) {
+									return 1;
+								} else { // close to 0 or at 0
+									return 0;
+								}
+							}
+						});
+				Object[] similarItems = new Object[20];
+				int itemIndex=0;
+				for (SimilarityScore simScore : 
+						(List<SimilarityScore>)correlations[(Integer)item1.getID()]) {
+					if (itemIndex < 20) {
+						similarItems[i] = simScore;
+						logger.info("item1="+((NetflixMovie)item1).getTitle()+
+								" otherItem="+((NetflixMovie)dataModel.getItem(simScore.getItemID())).getTitle()+
+								" simScore="+simScore.getRating());
+					}
+					itemIndex++;
+				}
+				correlations[(Integer)item1.getID()] = similarItems;
 			}
 		}
-		logger.info("saving simliarity maps");
-		ObjectOutputStream objOut = new ObjectOutputStream(new FileOutputStream(new File(netflixDataDir, "simMap"+chunkStart)));
-		objOut.writeObject(correlationMaps);
+		logger.info("saving simliarity scores");
+		ObjectOutputStream objOut = new ObjectOutputStream(new FileOutputStream(new File(netflixDataDir, "simScore"+chunkStart)));
+		objOut.writeObject(correlations);
 		objOut.close();
+	}
+	
+	public static class SimilarityScore implements Serializable {
+		private final Integer itemID;
+		private final Double rating;
+
+		/**
+		 * @param itemID
+		 * @param rating
+		 */
+		public SimilarityScore(Integer itemID, Double rating) {
+			super();
+			this.itemID = itemID;
+			this.rating = rating;
+		}
+		
+		/**
+		 * @return the itemID
+		 */
+		public Integer getItemID() {
+			return itemID;
+		}
+		/**
+		 * @return the rating
+		 */
+		public Double getRating() {
+			return rating;
+		}
 	}
 
 }
