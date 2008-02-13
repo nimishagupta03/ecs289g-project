@@ -3,8 +3,8 @@
  */
 package edu.ucdavis.cs.movieminer.taste;
 
-import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -134,41 +134,36 @@ public class KnnItemBasedRecommender implements ItemBasedRecommender {
 		// 2. Determine which of those K were also rated by theUser
 		// 3. Weighted interpolation between those in-common neighbors items' ratings	
 		Set<SimilarityScore> itemNeighbors = Sets.newHashSet();
+		
+		List<SimilarityScore> simScores = new ArrayList<SimilarityScore>(20);
+		for (Object obj : (Object[])correlations[Integer.parseInt(item.getID().toString())]) {
+			if (obj != null
+					&& obj instanceof SimilarityScore) {
+				simScores.add((SimilarityScore)obj);
+			} else {
+				logger.error("Object[] element was null or " +
+						"was not a simscore:"+obj);
+			}
+		}
+		
 		// retain only the items that have also been rated by the user 
 		Iterables.addAll(itemNeighbors,
-				Iterables.transform(
 					Iterables.filter(
-						Arrays.asList(correlations[Integer.parseInt(item.getID().toString())]), 
-					new Predicate<Object>() {
+						simScores, 
+					new Predicate<SimilarityScore>() {
 						@Override
-						public boolean apply(Object itemIn) {
+						public boolean apply(SimilarityScore itemIn) {
 							boolean keep = true;
 							
-							Preference pref = null;
-							
-							if (itemIn != null
-									&& itemIn instanceof SimilarityScore) {
-								pref = theUser.getPreferenceFor(
-										((SimilarityScore)itemIn).getItemID());
-							} else {
-								logger.error("itemIn was null or " +
-										"was not a simscore:"+itemIn);
-							}
-							
+							Preference pref = 
+								theUser.getPreferenceFor(itemIn.getItemID());
 							if (pref == null) {
 								keep = false;
 							}						
 							
 							return keep;
 						}
-					}),
-					new Function<Object, SimilarityScore>() {
-						@Override
-						public SimilarityScore apply(Object arg0) {
-							return (SimilarityScore) arg0;
-						}
-					}
-				));
+					}));
 		
 		for (final SimilarityScore scoredItem : itemNeighbors) {
 			Item similarItem = this.getDataModel().getItem(scoredItem.getItemID());
