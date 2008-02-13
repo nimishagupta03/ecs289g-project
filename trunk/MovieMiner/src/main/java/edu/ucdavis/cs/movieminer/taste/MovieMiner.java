@@ -40,7 +40,6 @@ import com.planetj.taste.neighborhood.UserNeighborhood;
 import com.planetj.taste.recommender.Recommender;
 
 import edu.ucdavis.cs.movieminer.taste.recommender.CompositeRecommender;
-import edu.ucdavis.cs.movieminer.taste.recommender.LoggingRecommender;
 
 /**
  * Predicts a single rating for the passed in data and
@@ -93,7 +92,7 @@ public class MovieMiner {
 			}catch (NoSuchElementException e){
 				logger.warn("No data exists in the training set for item: " +rating.getMovieId());
 				noTrainDataCount++;
-				rating.setRating(score(recommender.getDataModel().getUser(rating.getUserId())));
+				rating.setRating(guess());
 			}
 		}
 		logger.info("Total NaN's encountered "+nanCount);
@@ -113,13 +112,18 @@ public class MovieMiner {
 		// guess random
 		if (score == 0){
 			logger.info("Average equal to zero, guess a random score.");
-			Random random = new Random();
-			score = random.nextInt(6);
-			if (score == 0){
-				score++;
-			} 
+			score = guess();
 		}
 		logger.info("Set score:"+score);
+		return score;
+	}
+	
+	private int guess(){
+		Random random = new Random();
+		int score = random.nextInt(6);
+		if (score == 0){
+			score++;
+		} 
 		return score;
 	}
 	
@@ -226,8 +230,8 @@ public class MovieMiner {
 		  };
 		Recommender recommender = builder.buildRecommender(myModel);
 		// Decorate with a logger to see whats going on.
-		Recommender decoratedRecommender = new LoggingRecommender(recommender);
-		MovieMiner miner = new MovieMiner(ratings, decoratedRecommender);
+		//Recommender decoratedRecommender = new LoggingRecommender(recommender);
+		MovieMiner miner = new MovieMiner(ratings, recommender);
 		// Output the recommendation to a file.
 		miner.recommend();
 		Writer writer = new BufferedWriter(new FileWriter(args[3]));
