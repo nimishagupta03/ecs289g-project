@@ -7,6 +7,7 @@ import java.io.File;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.springframework.core.io.FileSystemResource;
 
 import com.planetj.taste.common.TasteException;
 import com.planetj.taste.correlation.ItemCorrelation;
@@ -19,7 +20,6 @@ import com.planetj.taste.impl.correlation.PearsonCorrelation;
 import com.planetj.taste.impl.eval.RMSRecommenderEvaluator;
 import com.planetj.taste.impl.neighborhood.NearestNUserNeighborhood;
 import com.planetj.taste.impl.recommender.CachingRecommender;
-import com.planetj.taste.impl.recommender.GenericItemBasedRecommender;
 import com.planetj.taste.impl.recommender.GenericUserBasedRecommender;
 import com.planetj.taste.model.DataModel;
 import com.planetj.taste.neighborhood.UserNeighborhood;
@@ -80,12 +80,10 @@ public class ExtendedTasteTest {
 				// -- end SlopeOneRecommender
 				
 				// -- Item-based recommender
-				ItemCorrelation itemCorrelation = new GenericItemCorrelation(new PearsonCorrelation(model), model);
 				KnnItemBasedRecommender itemBasedRecommender = 
 					new KnnItemBasedRecommender(
-						new GenericItemBasedRecommender(model, itemCorrelation),
-						itemNeighbors, 
-						itemCorrelation);
+						model,
+						new FileSystemResource("/home/fisherog/dev/netflix_data/simScore17K.ser"));
 				// -- end Item-based recommender
 				
 				Recommender compositeRecommender = 
