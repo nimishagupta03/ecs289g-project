@@ -83,8 +83,8 @@ public class PrecomputeItemSimilarities {
 							/**
 							 * @param o1
 							 * @param o2
-							 * @return -1 if o1 should be before o2 (o1 is greater),
-							 * 1 if o1 should be after o2, else 0 if their ratings 
+							 * @return 1 if o1 should be before o2,
+							 * -1 if o1 should be after o2, else 0 if their ratings 
 							 * are equivalent.
 							 */
 							public int compare(SimilarityScore o1,
@@ -94,33 +94,35 @@ public class PrecomputeItemSimilarities {
 									return 0;
 								} else if (o1.getRating() == Double.NaN &&
 										o2.getRating() !=  Double.NaN) {
-									return 1;
+									return -1;
 								} else if (o1.getRating() != Double.NaN &&
 										o2.getRating() ==  Double.NaN) {
 									return -1;
 								} else {
 									double diff = o1.getRating() - o2.getRating();
 									if (diff > 0.0000001d) {
-										return -1;
-									} else if (diff < -0.0000001d) {
 										return 1;
+									} else if (diff < -0.0000001d) {
+										return -1;
 									} else { // close to 0 or at 0
 										return 0;
 									}
 								}
 							}
 						});
+				Collections.reverse((List<SimilarityScore>)correlations[(Integer)item1.getID()]);
+				
 				Object[] similarItems = new Object[20];
 				int itemIndex=0;
 				for (SimilarityScore simScore : 
 						(List<SimilarityScore>)correlations[(Integer)item1.getID()]) {
 					if (itemIndex < 20) {
 						similarItems[itemIndex] = simScore;
-						logger.info("item1="+((NetflixMovie)item1).getTitle()+
-								" otherItem="+((NetflixMovie)dataModel.getItem(simScore.getItemID())).getTitle()+
-								" simScore="+simScore.getRating());
 					}
 					itemIndex++;
+					logger.info("item1="+((NetflixMovie)item1).getTitle()+
+							" otherItem="+((NetflixMovie)dataModel.getItem(simScore.getItemID())).getTitle()+
+							" simScore="+simScore.getRating());
 				}
 				correlations[(Integer)item1.getID()] = similarItems;
 			}
