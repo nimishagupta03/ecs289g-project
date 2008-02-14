@@ -48,12 +48,13 @@ public class Rating {
 	}
 	
 	public static void write(Rating rating, Writer writer) throws IOException{
-		writer.write(rating.getUserId()+","+rating.getRating()+","+rating.getDate());
+		writer.write(rating.getMovieId()+","+rating.getUserId()+","+rating.getRating()+","+rating.getDate());
 	}
 	
 	public static void write(Collection<Rating> ratings, Writer writer) throws IOException{
 		for(Rating rating : ratings){
 			write(rating, writer);
+			writer.write('\n');
 		}
 	}
 	
