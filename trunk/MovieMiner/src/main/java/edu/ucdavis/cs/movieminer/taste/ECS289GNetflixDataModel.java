@@ -55,7 +55,11 @@ public final class ECS289GNetflixDataModel implements DataModel {
 		log.info("Creating delegate DataModel...");
 		delegate = new GenericDataModel(users);
 	}
-
+	
+	public Preference[] getPreferencesForItemAsArray(Object itemID)
+			throws TasteException {
+		return delegate.getPreferencesForItemAsArray(itemID);
+	}
 	
 	private static List<User> readUsers(final File dataDirectory, final List<NetflixMovie> movies) throws Exception {
 		final Map<Integer, List<Preference>> userIDPrefMap =
