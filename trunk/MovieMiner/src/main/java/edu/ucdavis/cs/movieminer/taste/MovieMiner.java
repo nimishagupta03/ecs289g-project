@@ -4,7 +4,7 @@
 package edu.ucdavis.cs.movieminer.taste;
 
 import static edu.ucdavis.cs.movieminer.taste.Rating.createRating;
-
+import edu.ucdavis.cs.movieminer.taste.recommender.LoggingRecommender;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -21,7 +21,7 @@ import java.util.NoSuchElementException;
 import java.util.Random;
 
 import org.apache.log4j.Logger;
-
+import org.springframework.core.io.FileSystemResource;
 import com.planetj.taste.common.TasteException;
 import com.planetj.taste.correlation.ItemCorrelation;
 import com.planetj.taste.correlation.UserCorrelation;
@@ -184,6 +184,9 @@ public class MovieMiner {
 		while ( (line = reader.readLine()) != null){
 			ratings.add(createRating(line));
 		}
+		int start = Integer.parseInt(args[4]);
+		int end = Integer.parseInt(args[5]);	
+		ratings = ratings.subList(start,end+1);
 		// Build data model
 		DataModel myModel = new NetflixDataModel(new File(args[1]));
 		RecommenderBuilder builder = new RecommenderBuilder() {
@@ -208,8 +211,11 @@ public class MovieMiner {
 					// -- end SlopeOneRecommender
 					
 					// -- Item-based recommender
-					Recommender itemBasedRecommender =
-						  new GenericItemBasedRecommender(model, (ItemCorrelation)userCorrelation);
+ KnnItemBasedRecommender itemBasedRecommender =
+                                        new KnnItemBasedRecommender(
+                                                model,
+                                                new FileSystemResource("/home/becker/dev/netflix_data/simScore17K-150each.ser"));
+
 					// -- end Item-based recommender
 					
 					Recommender compositeRecommender = 
@@ -230,8 +236,8 @@ public class MovieMiner {
 		  };
 		Recommender recommender = builder.buildRecommender(myModel);
 		// Decorate with a logger to see whats going on.
-		//Recommender decoratedRecommender = new LoggingRecommender(recommender);
-		MovieMiner miner = new MovieMiner(ratings, recommender);
+		Recommender decoratedRecommender = new LoggingRecommender(recommender);
+		MovieMiner miner = new MovieMiner(ratings, decoratedRecommender);
 		// Output the recommendation to a file.
 		miner.recommend();
 		Writer writer = new BufferedWriter(new FileWriter(args[3]));
