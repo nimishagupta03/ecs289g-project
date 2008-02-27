@@ -18,7 +18,6 @@ package edu.ucdavis.cs.movieminer.taste;
 
 import java.io.Serializable;
 
-import org.jetbrains.annotations.NotNull;
 
 import com.planetj.taste.model.Item;
 
@@ -39,12 +38,10 @@ final class NetflixMovie implements Item, Serializable{
 		this.title = title;
 	}
 
-	@NotNull
 	public Object getID() {
 		return id;
 	}
 
-	@NotNull
 	String getTitle() {
 		return title;
 	}
@@ -67,7 +64,6 @@ final class NetflixMovie implements Item, Serializable{
 		return this.id.compareTo(((NetflixMovie) item).id);
 	}
 
-	@NotNull
 	@Override
 	public String toString() {
 		return id + ":" + title;

@@ -141,11 +141,10 @@ public class KnnItemBasedRecommender implements ItemBasedRecommender {
 					&& obj instanceof SimilarityScore) {
 				simScores.add((SimilarityScore)obj);
 			} else {
-				logger.error("Object[] element was null or " +
-						"was not a simscore:"+obj);
+//				logger.error("Object[] element was null or " +
+//						"was not a simscore:"+obj);
 			}
 		}
-		
 		// retain only the items that have also been rated by the user 
 		Iterables.addAll(itemNeighbors,
 					Iterables.filter(

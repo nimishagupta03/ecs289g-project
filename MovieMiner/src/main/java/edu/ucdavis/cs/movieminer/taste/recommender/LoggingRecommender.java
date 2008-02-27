@@ -36,8 +36,8 @@ public class LoggingRecommender extends RecommenderDecorator {
 			throws TasteException {
 		double preference = decoratedRecommender.estimatePreference(userID, itemID);
 		estimateCount++;
-		if (estimateCount%10000 == 0)
-			logger.info("Number of estimated values: "+estimateCount);
+		if (estimateCount%100 == 0)
+			logger.error("Number of estimated values: "+estimateCount);
 		return preference;
 	}
 
