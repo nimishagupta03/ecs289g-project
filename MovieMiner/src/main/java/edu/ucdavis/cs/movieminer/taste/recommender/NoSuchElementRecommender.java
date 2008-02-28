@@ -44,7 +44,7 @@ public class NoSuchElementRecommender extends RecommenderDecorator {
 		}catch(NoSuchElementException e){
 			recommendation = userAverage(getDataModel().getUser(userID));
 			userAverageTotal++;
-			logger.info("The total predications scored with user average: "+userAverageTotal);
+			logger.info("The total predictions scored with user average: "+userAverageTotal);
 		}
 		return recommendation;
 	}

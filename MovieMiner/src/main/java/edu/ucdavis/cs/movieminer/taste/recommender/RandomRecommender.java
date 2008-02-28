@@ -41,7 +41,7 @@ public class RandomRecommender extends RecommenderDecorator {
 			logger.debug("Generating random score");
 			recommendation = guess();
 			randomTotal++;
-			logger.info("The total predications scored with a random value: "+randomTotal);
+			logger.info("The total predictions scored with a random value: "+randomTotal);
 		}
 		return recommendation;
 	}

@@ -58,7 +58,7 @@ public class WeightedAverageRecommender extends RecommenderDecorator {
 		BigDecimal bd = new BigDecimal(userAverage*userWeight + itemAverage*itemWeight);
 		score = bd.setScale(0, BigDecimal.ROUND_HALF_UP).intValue();
 		averagedTotal++;
-		logger.info("The total predications scored with a weighted average: "+averagedTotal);
+		logger.info("The total predictions scored with a weighted average: "+averagedTotal);
 		return score;
 	}
 	
