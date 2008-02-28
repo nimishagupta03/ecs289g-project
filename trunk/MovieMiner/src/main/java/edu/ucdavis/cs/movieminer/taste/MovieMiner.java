@@ -4,7 +4,7 @@
 package edu.ucdavis.cs.movieminer.taste;
 
 import static edu.ucdavis.cs.movieminer.taste.Rating.createRating;
-import edu.ucdavis.cs.movieminer.taste.recommender.LoggingRecommender;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -22,8 +22,8 @@ import java.util.Random;
 
 import org.apache.log4j.Logger;
 import org.springframework.core.io.FileSystemResource;
+
 import com.planetj.taste.common.TasteException;
-import com.planetj.taste.correlation.ItemCorrelation;
 import com.planetj.taste.correlation.UserCorrelation;
 import com.planetj.taste.eval.RecommenderBuilder;
 import com.planetj.taste.impl.correlation.AveragingPreferenceInferrer;
@@ -31,15 +31,15 @@ import com.planetj.taste.impl.correlation.PearsonCorrelation;
 import com.planetj.taste.impl.model.netflix.NetflixDataModel;
 import com.planetj.taste.impl.neighborhood.NearestNUserNeighborhood;
 import com.planetj.taste.impl.recommender.CachingRecommender;
-import com.planetj.taste.impl.recommender.GenericItemBasedRecommender;
 import com.planetj.taste.impl.recommender.GenericUserBasedRecommender;
 import com.planetj.taste.model.DataModel;
-import com.planetj.taste.model.Preference;
-import com.planetj.taste.model.User;
 import com.planetj.taste.neighborhood.UserNeighborhood;
 import com.planetj.taste.recommender.Recommender;
 
 import edu.ucdavis.cs.movieminer.taste.recommender.CompositeRecommender;
+import edu.ucdavis.cs.movieminer.taste.recommender.LoggingRecommender;
+import edu.ucdavis.cs.movieminer.taste.recommender.RandomRecommender;
+import edu.ucdavis.cs.movieminer.taste.recommender.WeightedAverageRecommender;
 
 /**
  * Predicts a single rating for the passed in data and
@@ -73,8 +73,7 @@ public class MovieMiner {
 	 * @throws TasteException
 	 */
 	public void recommend() throws TasteException{
-		logger.info("Recommending ratings.");
-		int nanCount = 0;
+		logger.debug("Recommending ratings.");
 		int noTrainDataCount = 0;
 		for(Rating rating : data){
 			try{
@@ -82,40 +81,20 @@ public class MovieMiner {
 				if (!Double.isNaN(estimate)){
 					BigDecimal bd = new BigDecimal(estimate);
 					bd = bd.setScale(0, BigDecimal.ROUND_HALF_UP);
-					logger.info("Estimated value rounded to int: "+bd.intValue());
+					logger.debug("Estimated value rounded to int: "+bd.intValue());
 					rating.setRating(bd.intValue());
 				}else{
-					logger.warn("Value could not be estimated, returned NaN.");
-					nanCount++;
-					rating.setRating(score(recommender.getDataModel().getUser(rating.getUserId())));
+					throw new RuntimeException("NaN occured for userID "+rating.getUserId()+" predicting movie "+rating.getMovieId());
 				}
 			}catch (NoSuchElementException e){
+				logger.error("NO GOOD");
 				logger.warn("No data exists in the training set for item: " +rating.getMovieId());
 				noTrainDataCount++;
 				rating.setRating(guess());
 			}
 		}
-		logger.info("Total NaN's encountered "+nanCount);
-		logger.info("Elements not found in the training set: "+noTrainDataCount);
-	}
-	
-	/**
-	 * Score by first trying to compute the average, else guess.
-	 * 
-	 * @param user
-	 * @return
-	 */
-	private int score(User user){
-		// first try calculating an average
-		logger.info("Score using user average.");
-		int score = average(user);
-		// guess random
-		if (score == 0){
-			logger.info("Average equal to zero, guess a random score.");
-			score = guess();
-		}
-		logger.info("Set score:"+score);
-		return score;
+		logger.info("Total ratings estimated with weighted average "+((WeightedAverageRecommender)recommender).getAveragedTotal());
+		logger.info("Total ratings estimated with ranomd guess "+((RandomRecommender)recommender).getRandomTotal()+noTrainDataCount);
 	}
 	
 	private int guess(){
@@ -128,29 +107,13 @@ public class MovieMiner {
 	}
 	
 	/**
-	 * Compute the average score.
-	 * 
-	 * @param user
-	 * @return
-	 */
-	private int average(User user){
-		int n = 0;
-		int sum = 0;
-		for (Preference preference :  user.getPreferences()){
-			sum += preference.getValue();
-			n++;
-		}
-		return sum / n;
-	}
-	
-	/**
 	 * Writes ratings to writer.
 	 * 
 	 * @param writer
 	 * @throws IOException
 	 */
 	public void write(Writer writer) throws IOException{
-		logger.info("Writing ratings to file.");
+		logger.debug("Writing ratings to file.");
 		Rating.write(data, writer);
 	}
 	
@@ -214,7 +177,7 @@ public class MovieMiner {
  KnnItemBasedRecommender itemBasedRecommender =
                                         new KnnItemBasedRecommender(
                                                 model,
-                                                new FileSystemResource("/home/becker/dev/netflix_data/simScore17K-150each.ser"));
+                                                new FileSystemResource("/Users/jbeck/simScore17K-150each.ser"));
 
 					// -- end Item-based recommender
 					
@@ -236,7 +199,7 @@ public class MovieMiner {
 		  };
 		Recommender recommender = builder.buildRecommender(myModel);
 		// Decorate with a logger to see whats going on.
-		Recommender decoratedRecommender = new LoggingRecommender(recommender);
+		Recommender decoratedRecommender = new LoggingRecommender(new RandomRecommender(new WeightedAverageRecommender(recommender,0.5,0.5)));
 		MovieMiner miner = new MovieMiner(ratings, decoratedRecommender);
 		// Output the recommendation to a file.
 		miner.recommend();
