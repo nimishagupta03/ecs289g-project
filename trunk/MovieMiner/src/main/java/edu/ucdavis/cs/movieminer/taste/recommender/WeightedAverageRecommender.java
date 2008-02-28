@@ -67,7 +67,7 @@ public class WeightedAverageRecommender extends RecommenderDecorator {
 	}
 	
 	private int itemAverage(int itemId) throws TasteException{
-		return preferenceAverage(getDataModel().getPreferencesForItemAsArray(itemId));
+		return preferenceAverage(getDataModel().getPreferencesForItemAsArray(Integer.toString(itemId)));
 	}
 	
 	private int preferenceAverage(Preference[] preferences){
