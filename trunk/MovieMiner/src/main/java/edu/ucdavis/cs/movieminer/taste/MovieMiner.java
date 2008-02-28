@@ -38,6 +38,7 @@ import com.planetj.taste.recommender.Recommender;
 
 import edu.ucdavis.cs.movieminer.taste.recommender.CompositeRecommender;
 import edu.ucdavis.cs.movieminer.taste.recommender.LoggingRecommender;
+import edu.ucdavis.cs.movieminer.taste.recommender.NoSuchElementRecommender;
 import edu.ucdavis.cs.movieminer.taste.recommender.RandomRecommender;
 import edu.ucdavis.cs.movieminer.taste.recommender.WeightedAverageRecommender;
 
@@ -74,36 +75,14 @@ public class MovieMiner {
 	 */
 	public void recommend() throws TasteException{
 		logger.debug("Recommending ratings.");
-		int noTrainDataCount = 0;
 		for(Rating rating : data){
-			try{
-				double estimate = recommender.estimatePreference(rating.getUserId(), rating.getMovieId());
-				if (!Double.isNaN(estimate)){
-					BigDecimal bd = new BigDecimal(estimate);
-					bd = bd.setScale(0, BigDecimal.ROUND_HALF_UP);
-					logger.debug("Estimated value rounded to int: "+bd.intValue());
-					rating.setRating(bd.intValue());
-				}else{
-					throw new RuntimeException("NaN occured for userID "+rating.getUserId()+" predicting movie "+rating.getMovieId());
-				}
-			}catch (NoSuchElementException e){
-				logger.error("NO GOOD");
-				logger.warn("No data exists in the training set for item: " +rating.getMovieId());
-				noTrainDataCount++;
-				rating.setRating(guess());
-			}
+			double estimate = recommender.estimatePreference(rating.getUserId(), rating.getMovieId());
+			logger.debug("rating <userid, movieid> "+"<"+rating.getUserId()+","+"<"+rating.getMovieId()+">");	
+			BigDecimal bd = new BigDecimal(estimate);
+			bd = bd.setScale(0, BigDecimal.ROUND_HALF_UP);
+			logger.debug("setting the rating value to: "+bd.intValue());
+			rating.setRating(bd.intValue());
 		}
-		logger.info("Total ratings estimated with weighted average "+((WeightedAverageRecommender)recommender).getAveragedTotal());
-		logger.info("Total ratings estimated with ranomd guess "+((RandomRecommender)recommender).getRandomTotal()+noTrainDataCount);
-	}
-	
-	private int guess(){
-		Random random = new Random();
-		int score = random.nextInt(6);
-		if (score == 0){
-			score++;
-		} 
-		return score;
 	}
 	
 	/**
@@ -199,7 +178,7 @@ public class MovieMiner {
 		  };
 		Recommender recommender = builder.buildRecommender(myModel);
 		// Decorate with a logger to see whats going on.
-		Recommender decoratedRecommender = new LoggingRecommender(new RandomRecommender(new WeightedAverageRecommender(recommender,0.5,0.5)));
+		Recommender decoratedRecommender = new LoggingRecommender(new RandomRecommender(new NoSuchElementRecommender(new WeightedAverageRecommender(recommender,1,0))));
 		MovieMiner miner = new MovieMiner(ratings, decoratedRecommender);
 		// Output the recommendation to a file.
 		miner.recommend();
