@@ -44,7 +44,7 @@ public class WeightedAverageRecommender extends RecommenderDecorator {
 			throws TasteException {
 		double recommendation = decoratedRecommender.estimatePreference(userID, itemID);
 		if (Double.isNaN(recommendation)){
-			recommendation = score(getDataModel().getUser(userID), Integer.parseInt((String)itemID));
+			recommendation = score(getDataModel().getUser(userID), Integer.parseInt(itemID.toString()));
 		}
 		return recommendation;
 	}
