@@ -34,7 +34,7 @@ public class InitialResults {
 	}
 	
 	public int getRatingFor(Integer movieId, Integer userId) {
-		Integer rating = userMovieRating.get(movieId+','+userId);
+		Integer rating = userMovieRating.get(movieId+","+userId);
 		
 		return rating == null ? -1 : rating;
 	}
@@ -55,7 +55,8 @@ public class InitialResults {
 											trim().split(",")[0].
 											trim().split(" ")[1];
 					int entry = Integer.parseInt(actualRating);
-					userMovieRating.put(entries[0]+','+entries[1], Integer.parseInt(entries[2]));
+					userMovieRating.put(Integer.parseInt(entries[0])+","+Integer.parseInt(entries[1]),
+							Integer.parseInt(entries[2]));
 				} else {
 					throw new IllegalStateException();
 				}
