@@ -17,30 +17,15 @@ import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Random;
 
 import org.apache.log4j.Logger;
-import org.springframework.core.io.FileSystemResource;
 
 import com.planetj.taste.common.TasteException;
-import com.planetj.taste.correlation.UserCorrelation;
-import com.planetj.taste.eval.RecommenderBuilder;
-import com.planetj.taste.impl.correlation.AveragingPreferenceInferrer;
-import com.planetj.taste.impl.correlation.PearsonCorrelation;
 import com.planetj.taste.impl.model.netflix.NetflixDataModel;
-import com.planetj.taste.impl.neighborhood.NearestNUserNeighborhood;
-import com.planetj.taste.impl.recommender.CachingRecommender;
-import com.planetj.taste.impl.recommender.GenericUserBasedRecommender;
 import com.planetj.taste.model.DataModel;
-import com.planetj.taste.neighborhood.UserNeighborhood;
 import com.planetj.taste.recommender.Recommender;
 
-import edu.ucdavis.cs.movieminer.taste.recommender.CompositeRecommender;
-import edu.ucdavis.cs.movieminer.taste.recommender.LoggingRecommender;
-import edu.ucdavis.cs.movieminer.taste.recommender.NoSuchElementRecommender;
-import edu.ucdavis.cs.movieminer.taste.recommender.RandomRecommender;
-import edu.ucdavis.cs.movieminer.taste.recommender.WeightedAverageRecommender;
+import edu.ucdavis.cs.movieminer.taste.recommender.EvaluatingRecommender;
 
 /**
  * Predicts a single rating for the passed in data and
@@ -101,6 +86,9 @@ public class MovieMiner {
 	 * args[1] is the netflix home directory, containing training_set directory and movie_titles.txt
 	 * args[2] number of neighbors used in prediction
 	 * args[3] output file where predicted ratings are stored
+	 * args[4] start
+	 * args[5] end
+	 * 
 	 * 
 	 * @param args
 	 * @throws IOException 
@@ -131,57 +119,19 @@ public class MovieMiner {
 		ratings = ratings.subList(start,end+1);
 		// Build data model
 		DataModel myModel = new NetflixDataModel(new File(args[1]));
-		RecommenderBuilder builder = new RecommenderBuilder() {
-			 public Recommender buildRecommender(DataModel model) throws TasteException {
-			    	// --- User-based recommender --
-			    	// build and return the Recommender to evaluate here
-					UserCorrelation userCorrelation = new PearsonCorrelation(model);
-					// Optional:
-					userCorrelation
-							.setPreferenceInferrer(new AveragingPreferenceInferrer(model));
-
-					UserNeighborhood neighborhood = new NearestNUserNeighborhood(neighbors,
-							userCorrelation, model);
-
-					Recommender userRecommender = new GenericUserBasedRecommender(model,
-							neighborhood, userCorrelation);
-					// -- end User-based Recommender
-					
-					// -- SlopeOneRecommender
-					// Make a weighted slope one recommender
-					//Recommender slopeOneRecommender = new SlopeOneRecommender(model);
-					// -- end SlopeOneRecommender
-					
-					// -- Item-based recommender
- KnnItemBasedRecommender itemBasedRecommender =
-                                        new KnnItemBasedRecommender(
-                                                model,
-                                                new FileSystemResource("/Users/jbeck/simScore17K-150each.ser"));
-
-					// -- end Item-based recommender
-					
-					Recommender compositeRecommender = 
-								new CompositeRecommender(model, 
-												userRecommender,
-												//slopeOneRecommender,
-												itemBasedRecommender
-												).
-											setWeights(
-												0.40d, 
-												//0.10d,
-												0.60d
-												);
-					Recommender cachingRecommender = new CachingRecommender(compositeRecommender);
-					
-					return cachingRecommender;
-			 }
-		  };
+		SpelunkerRecommenderBuilder builder = new SpelunkerRecommenderBuilder();
+		builder.setUserNeighbors(neighbors);
 		Recommender recommender = builder.buildRecommender(myModel);
-		// Decorate with a logger to see whats going on.
-		Recommender decoratedRecommender = new LoggingRecommender(new RandomRecommender(new NoSuchElementRecommender(new WeightedAverageRecommender(recommender,1,0))));
-		MovieMiner miner = new MovieMiner(ratings, decoratedRecommender);
-		// Output the recommendation to a file.
+		// Recommend
+		MovieMiner miner = new MovieMiner(ratings, recommender);
 		miner.recommend();
+		// Log useful stats
+		EvaluatingRecommender evalRecommender = builder.getEvalRecommender();
+		logger.info("Eval recommender correct count: "+evalRecommender.getCorrectCount());
+		logger.info("Eval recommender incorrect count: "+evalRecommender.getIncorrectCount());
+		logger.info("Eval recommender estimated count: "+evalRecommender.getEstimateCount());
+		logger.info("Eval recommender loss count: "+evalRecommender.getLoss());
+		// Output the recommendation to a file.
 		Writer writer = new BufferedWriter(new FileWriter(args[3]));
 		miner.write(writer);
 		writer.flush();
