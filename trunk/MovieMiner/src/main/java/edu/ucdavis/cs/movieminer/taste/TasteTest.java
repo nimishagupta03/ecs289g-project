@@ -59,7 +59,7 @@ public class TasteTest {
 		logger.info("Eval recommender correct count: "+evalRecommender.getCorrectCount());
 		logger.info("Eval recommender incorrect count: "+evalRecommender.getIncorrectCount());
 		logger.info("Eval recommender estimated count: "+evalRecommender.getEstimateCount());
-		logger.info("Eval recommender loss count: "+evalRecommender.getLoss());
+		logger.info("Eval recommender loss count: "+evalRecommender.getTotalLoss());
 	}
 
 }

@@ -22,8 +22,8 @@ public class InitialResults {
 	}
 	
 	private final void load() {
-		setTest(new FileSystemResource("c:\\dev\\data\\netflix\\test-labeled.dat"));
-		setAnswers(new FileSystemResource("c:\\dev\\data\\netflix\\InitialResults.txt"));
+		setTest(new FileSystemResource("/home/fisherog/dev/netflix_data/test-labeled.dat"));
+		setAnswers(new FileSystemResource("/home/fisherog/dev/netflix_data/InitialResults.txt"));
 	}
 	
 	public void setTest(Resource test) {
