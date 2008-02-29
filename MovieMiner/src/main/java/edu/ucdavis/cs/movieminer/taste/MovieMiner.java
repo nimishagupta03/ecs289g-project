@@ -100,11 +100,24 @@ public class MovieMiner {
 	public static void main(String args[]) throws IOException, ClassNotFoundException, TasteException, InstantiationException, IllegalAccessException{
 		if (args.length < 4) {
 			System.out.println("Usage:");
-			System.out.println(" java MovieMiner {netflix_test_file} {netflix_home_dir} {k_neighbor_value} {output file}");
+			System.out.println(" java MovieMiner " +
+					"{netflix_test_file} {netflix_home_dir} " +
+					"{k_neighbor_value} " +
+					"{output file} " +
+					"{start} {end} "+
+					"_optional params:_ "+
+					"{runName} {userWeight} {itemWeight} {slopeOneWeight} {useSlopeOne} ");
 			System.exit(-1);
 		} else {
 			System.out.println("using command line args: "+args);
 		}
+		
+		String runName = args.length > 6 ? '['+args[6]+']' : ""; 
+		double userWeight = args.length > 7 ? Double.parseDouble(args[7]) : 0.60d;
+		double itemWeight = args.length > 8 ? Double.parseDouble(args[8]) : 0.40d;
+		double slopeOneWeight = args.length > 9 ? Double.parseDouble(args[9]) : 0.10d;
+		boolean useSlopeOne = args.length > 10 ? Boolean.valueOf(args[10]) : false;
+		
 		final int neighbors = Integer.parseInt(args[2]);
 		// Read in the ratings from the data set.
 		List<Rating> ratings = new LinkedList<Rating>(); 
@@ -114,23 +127,33 @@ public class MovieMiner {
 		while ( (line = reader.readLine()) != null){
 			ratings.add(createRating(line));
 		}
+		
 		int start = Integer.parseInt(args[4]);
 		int end = Integer.parseInt(args[5]);	
 		ratings = ratings.subList(start,end+1);
+		
 		// Build data model
 		DataModel myModel = new NetflixDataModel(new File(args[1]));
 		SpelunkerRecommenderBuilder builder = new SpelunkerRecommenderBuilder();
 		builder.setUserNeighbors(neighbors);
+		builder.setUserWeight(userWeight);
+		builder.setItemWeight(itemWeight);
+		builder.setUseSlopeOne(useSlopeOne);
 		Recommender recommender = builder.buildRecommender(myModel);
+		
 		// Recommend
 		MovieMiner miner = new MovieMiner(ratings, recommender);
 		miner.recommend();
+		
 		// Log useful stats
 		EvaluatingRecommender evalRecommender = builder.getEvalRecommender();
-		logger.info("Eval recommender correct count: "+evalRecommender.getCorrectCount());
-		logger.info("Eval recommender incorrect count: "+evalRecommender.getIncorrectCount());
-		logger.info("Eval recommender estimated count: "+evalRecommender.getEstimateCount());
-		logger.info("Eval recommender loss count: "+evalRecommender.getLoss());
+		logger.info(runName+" Eval stats: "+evalRecommender.getAccuracyOutput());
+		logger.info(runName+" Eval stats! "+
+				evalRecommender.getEstimateCount()+','+
+				evalRecommender.getCorrectCount()+','+
+				evalRecommender.getIncorrectCount()+','+
+				evalRecommender.getTotalLoss());
+		
 		// Output the recommendation to a file.
 		Writer writer = new BufferedWriter(new FileWriter(args[3]));
 		miner.write(writer);

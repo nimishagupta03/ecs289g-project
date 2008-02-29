@@ -1,6 +1,7 @@
 package edu.ucdavis.cs.movieminer.taste.recommender;
 
 import java.math.BigDecimal;
+import java.text.NumberFormat;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -17,12 +18,12 @@ import edu.ucdavis.cs.movieminer.taste.InitialResults;
 public class EvaluatingRecommender extends RecommenderDecorator {
 
 	private static final Logger logger = Logger.getLogger(LoggingRecommender.class);
-	int estimateCount = 0;
+	int estimateCount;
 	int correctCount;
 	int incorrectCount;
-	long loss;
+	long totalLoss;
 	private InitialResults results;
-	
+	private NumberFormat percentFormatter = NumberFormat.getPercentInstance();	
 	
 	public EvaluatingRecommender(Recommender recommender) {
 		super(recommender);
@@ -44,13 +45,24 @@ public class EvaluatingRecommender extends RecommenderDecorator {
 			logger.info("[eval] Correct");
 		} else {
 			incorrectCount++;
-			loss += (intValue-actualValue)*(intValue-actualValue);
+			double loss = (intValue-actualValue)*(intValue-actualValue);
 			logger.info("[eval] Incorrect: Actual "+actualValue+", Predicted "+intValue+", Loss "+loss);
+			totalLoss += loss;
 		}
 		
-		if (estimateCount%100 == 0)
+		if (estimateCount%100 == 0) {			
 			logger.info("Number of estimated values: "+estimateCount);
+			logger.info(getAccuracyOutput());
+		}
 		return preference;
+	}
+
+	public String getAccuracyOutput() {
+		return "Accuracy: total="+estimateCount+" correct="+correctCount+
+				" ("+percentFormatter.format(correctCount/(double)estimateCount)+") "+
+				"incorrect="+incorrectCount+
+				" ("+percentFormatter.format(incorrectCount/(double)estimateCount)+") "+
+				"loss="+totalLoss;
 	}
 
 	@Override
@@ -99,8 +111,8 @@ public class EvaluatingRecommender extends RecommenderDecorator {
 		return incorrectCount;
 	}
 
-	public long getLoss() {
-		return loss;
+	public long getTotalLoss() {
+		return totalLoss;
 	}
 
 	public InitialResults getResults() {
