@@ -129,6 +129,9 @@ public class KnnItemBasedRecommender implements ItemBasedRecommender {
 		if (item == null || item.getID() == null || theUser == null) {
 			logger.error("item or user was null - skipping");
 			return Double.NaN;
+		} else if (correlations[Integer.parseInt(item.getID().toString())] == null) {
+			logger.error("no correlation found for "+item+" - skipping");
+			return Double.NaN;
 		}
 		double preference = 0.0;
 		double totalCorrelation = 0.0;
