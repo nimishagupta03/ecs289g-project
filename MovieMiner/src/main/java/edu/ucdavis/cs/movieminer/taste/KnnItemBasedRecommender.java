@@ -126,7 +126,7 @@ public class KnnItemBasedRecommender implements ItemBasedRecommender {
 	}
 	
 	private double doEstimatePreference(final User theUser, final Item item) throws TasteException {
-		if (item == null || theUser == null) {
+		if (item == null || item.getID() == null || theUser == null) {
 			logger.error("item or user was null - skipping");
 			return Double.NaN;
 		}
