@@ -1,9 +1,13 @@
 package edu.ucdavis.cs.movieminer.taste.recommender;
 
+import java.io.File;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.NumberFormat;
 import java.util.List;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.LineIterator;
 import org.apache.log4j.Logger;
 
 import com.planetj.taste.common.TasteException;
@@ -37,24 +41,30 @@ public class EvaluatingRecommender extends RecommenderDecorator {
 		double preference = decoratedRecommender.estimatePreference(userID, itemID);
 		BigDecimal bd = new BigDecimal(preference); 
 		int intValue = bd.setScale(0, BigDecimal.ROUND_HALF_UP).intValue();
+
+		trackAccuracy(userID, itemID, intValue);
+		
+		return preference;
+	}
+	
+	public void trackAccuracy(Object userID, Object itemID, int rating) {
 		int actualValue = results.getRatingFor(Integer.parseInt(itemID.toString()), Integer.parseInt(userID.toString()));
 
 		estimateCount++;
-		if (intValue == actualValue) {
+		if (rating == actualValue) {
 			correctCount++;
 			logger.info("[eval] Correct");
 		} else {
 			incorrectCount++;
-			double loss = (intValue-actualValue)*(intValue-actualValue);
-			logger.info("[eval] Incorrect: Actual "+actualValue+", Predicted "+intValue+", Loss "+loss);
+			double loss = (rating-actualValue)*(rating-actualValue);
+			logger.info("[eval] Incorrect: Actual "+actualValue+", Predicted "+rating+", Loss "+loss);
 			totalLoss += loss;
 		}
 		
 		if (estimateCount%100 == 0) {			
 			logger.info("Number of estimated values: "+estimateCount);
 			logger.info(getAccuracyOutput());
-		}
-		return preference;
+		}		
 	}
 
 	public String getAccuracyOutput() {
@@ -117,5 +127,29 @@ public class EvaluatingRecommender extends RecommenderDecorator {
 
 	public InitialResults getResults() {
 		return results;
-	}	
+	}
+	
+	public static void main(String[] args) {
+		// first arg is the predictions file
+		File predictions = new File(args[0]);
+		EvaluatingRecommender rec = new EvaluatingRecommender(null);
+		
+		LineIterator it = null;
+		try {
+			it = FileUtils.lineIterator(predictions);
+			while (it.hasNext()) {
+				String line = it.nextLine();
+				// movie is first, then user, then rating
+				String[] entries = line.split(",");
+				int rating = Integer.parseInt(entries[2]);
+				rec.trackAccuracy(entries[1], entries[0], rating);
+			}
+		} catch (IOException ioex) {
+			logger.error(ioex);
+		} finally {
+			LineIterator.closeQuietly(it);
+		}
+		
+		logger.info(rec.getAccuracyOutput());
+	}
 }
