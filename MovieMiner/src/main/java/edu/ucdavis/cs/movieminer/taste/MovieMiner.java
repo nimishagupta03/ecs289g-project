@@ -113,10 +113,10 @@ public class MovieMiner {
 		}
 		
 		String runName = args.length > 6 ? '['+args[6]+']' : ""; 
-		double userWeight = args.length > 7 ? Double.parseDouble(args[7]) : 0.60d;
-		double itemWeight = args.length > 8 ? Double.parseDouble(args[8]) : 0.40d;
-		double slopeOneWeight = args.length > 9 ? Double.parseDouble(args[9]) : 0.10d;
-		boolean useSlopeOne = args.length > 10 ? Boolean.valueOf(args[10]) : false;
+		double userWeight = args.length > 7 ? Double.parseDouble(args[7]) : 0.30d;
+		double itemWeight = args.length > 8 ? Double.parseDouble(args[8]) : 0.00d;
+		double slopeOneWeight = args.length > 9 ? Double.parseDouble(args[9]) : 0.70d;
+		boolean useSlopeOne = args.length > 10 ? Boolean.valueOf(args[10]) : true;
 		
 		final int neighbors = Integer.parseInt(args[2]);
 		// Read in the ratings from the data set.
@@ -138,6 +138,7 @@ public class MovieMiner {
 		builder.setUserNeighbors(neighbors);
 		builder.setUserWeight(userWeight);
 		builder.setItemWeight(itemWeight);
+		builder.setSlopeOneWeight(slopeOneWeight);
 		builder.setUseSlopeOne(useSlopeOne);
 		Recommender recommender = builder.buildRecommender(myModel);
 		

@@ -82,7 +82,7 @@ public class SpelunkerRecommenderBuilder implements RecommenderBuilder {
 		Recommender slopeOneRecommender = null;
 		if (this.useSlopeOne) {
 			slopeOneRecommender = new SlopeOneRecommender(model,true,true,
-				new MemoryDiffStorage(model, true, true, 2500000l));
+				new MemoryDiffStorage(model, true, true, 5000000l));
 		}
 		// -- end SlopeOneRecommender
 		
@@ -117,9 +117,14 @@ public class SpelunkerRecommenderBuilder implements RecommenderBuilder {
 								this.userWeight, 
 								this.itemWeight
 								);
-			logger.info("composed userRecommender, itemBasedRecommender, slopeOne");
+			logger.info("composed userRecommender, itemBasedRecommender");
 		}
-		Recommender decoratedRecommender = new CachingRecommender(new LoggingRecommender(new RandomRecommender(new NoSuchElementRecommender(new WeightedAverageRecommender(compositeRecommender,0.75,0.25)))));
+		Recommender decoratedRecommender = 
+				new CachingRecommender(
+						new LoggingRecommender(
+								new RandomRecommender(
+										new NoSuchElementRecommender(
+												new WeightedAverageRecommender(compositeRecommender,0.5,0.5)))));
 		evalRecommender = new EvaluatingRecommender(decoratedRecommender);
 		return evalRecommender;
 	}
