@@ -22,8 +22,8 @@ public class InitialResults {
 	}
 	
 	private final void load() {
-		setTest(new FileSystemResource("/home/fisherog/dev/netflix_data/test-labeled.dat"));
-		setAnswers(new FileSystemResource("/home/fisherog/dev/netflix_data/InitialResults.txt"));
+		setTest(new FileSystemResource("c:/dev/data/netflix/test-labeled.dat"));
+		setAnswers(new FileSystemResource("c:/dev/data/netflix/InitialResults.txt"));
 	}
 	
 	public void setTest(Resource test) {
@@ -49,14 +49,14 @@ public class InitialResults {
 				// movie is first, then user, then rating
 				String[] entries = trainLine.split(",");
 				if (prediction.trim().endsWith("Correct")) {
-					userMovieRating.put(entries[0]+','+entries[1], Integer.parseInt(entries[2]));
+					userMovieRating.put(Integer.parseInt(entries[0])+","+Integer.parseInt(entries[1]), Integer.parseInt(entries[2]));
 				} else if (prediction.indexOf("Incorrect") != -1) {
 					String actualRating = prediction.split(":")[2].
 											trim().split(",")[0].
 											trim().split(" ")[1];
 					int entry = Integer.parseInt(actualRating);
 					userMovieRating.put(Integer.parseInt(entries[0])+","+Integer.parseInt(entries[1]),
-							Integer.parseInt(entries[2]));
+							entry);
 				} else {
 					throw new IllegalStateException();
 				}
