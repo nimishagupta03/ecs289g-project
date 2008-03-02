@@ -20,6 +20,7 @@ import java.util.List;
 
 import org.apache.log4j.Logger;
 
+import com.google.common.base.Join;
 import com.planetj.taste.common.TasteException;
 import com.planetj.taste.impl.model.netflix.NetflixDataModel;
 import com.planetj.taste.model.DataModel;
@@ -109,7 +110,7 @@ public class MovieMiner {
 					"{runName} {userWeight} {itemWeight} {slopeOneWeight} {useSlopeOne} ");
 			System.exit(-1);
 		} else {
-			System.out.println("using command line args: "+args);
+			System.out.println("using command line args: "+Join.join(", ", args));
 		}
 		
 		String runName = args.length > 6 ? '['+args[6]+']' : ""; 
